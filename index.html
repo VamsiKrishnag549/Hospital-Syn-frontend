@@ -728,7 +728,7 @@ console.log(name, email, password, currentRole);
   console.log("Sending data..."); // 👈 ADD
 
   try {
-    const res = await fetch("https://hospital-syn-backend.onrender.com/signup", {
+    const res = await fetch("https://hospital-syn-backend.onrender.com/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -743,9 +743,14 @@ console.log(name, email, password, currentRole);
     
 
     const data = await res.json();
-    console.log("Response:", data);
+console.log("Response:", data);
 
-    alert("Signup successful");
+if (!res.ok) {
+  alert("Signup failed");
+  return;
+}
+
+alert("Signup successful");
 
   } catch (err) {
     console.error("ERROR:", err);
@@ -760,18 +765,41 @@ async function handleLogin() {
   try {
     const res = await fetch("https://hospital-syn-backend.onrender.com/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+     headers: {
+  "Content-Type": "application/json",
+  "Authorization": "Bearer " + localStorage.getItem("token")
+},
       body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();
 
-    // ✅ SAVE TOKEN
-    localStorage.setItem("token", data.token);
+// ❗ check error
+if (!res.ok) {
+  alert(data.message || "Login failed");
+  return;
+}
 
-    alert("Login success");
+// ✅ SAVE TOKEN
+localStorage.setItem("token", data.token);
+localStorage.setItem("user", JSON.stringify(data.user));
+
+alert("Login success");
+
+// ✅ SAVE USER
+currentUser = data.user;
+currentRole = data.user.role;
+
+// ✅ REDIRECT BASED ON ROLE
+if (data.user.role === "doctor") {
+  loadDoctorDash(data.user);
+} else if (data.user.role === "receptionist") {
+  loadRecDash(data.user);
+} else {
+  loadPatientDash(data.user);
+}
+
+closeAuth();
 
   } catch (err) {
     console.error(err);
