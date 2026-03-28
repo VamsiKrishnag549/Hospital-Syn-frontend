@@ -728,7 +728,7 @@ console.log(name, email, password, currentRole);
   console.log("Sending data..."); // 👈 ADD
 
   try {
-    const res = await fetch("https://hospital-syn-backend.onrender.com", {
+    const res = await fetch("https://hospital-syn-backend.onrender.com/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -740,6 +740,7 @@ console.log(name, email, password, currentRole);
         role: currentRole
       })
     });
+    
 
     const data = await res.json();
     console.log("Response:", data);
@@ -752,7 +753,31 @@ console.log(name, email, password, currentRole);
   }
 }
 
+async function handleLogin() {
+  const email = document.getElementById('lEmail').value;
+  const password = document.getElementById('lPass').value;
 
+  try {
+    const res = await fetch("https://hospital-syn-backend.onrender.com/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    // ✅ SAVE TOKEN
+    localStorage.setItem("token", data.token);
+
+    alert("Login success");
+
+  } catch (err) {
+    console.error(err);
+    alert("Login failed");
+  }
+}
 // ═══════════════════════════════════════════════
 // DOCTOR DASHBOARD
 // ═══════════════════════════════════════════════
@@ -1422,9 +1447,13 @@ function showScreen(id) {
   window.scrollTo(0,0);
 }
 function logout() {
-  currentUser=null; currentRole=null;
-  document.getElementById('patientProfileScreen').classList.remove('open');
-  showScreen('landing'); toast('👋 Signed out securely','success');
+  localStorage.removeItem("token");
+
+  currentUser=null;
+  currentRole=null;
+
+  showScreen('landing');
+  toast('👋 Signed out securely','success');
 }
 function initials(n) { return n.replace('Dr. ','').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2); }
 function toast(msg,type='success') {
