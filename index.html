@@ -790,8 +790,41 @@ alert("Login success");
 }
 
 // ✅ SAVE USER
-currentUser = data.user;
-currentRole = data.user.role;
+// 🔥 Map backend user to frontend format
+let user = data.user;
+
+if (user.role === "doctor") {
+  user = {
+    ...user,
+    id: user._id || "D" + Date.now(),
+    spec: "General Doctor",
+    color: "#0284c7"
+  };
+}
+
+if (user.role === "receptionist") {
+  user = {
+    ...user,
+    id: user._id || "R" + Date.now(),
+    assignedDocId: "D001" // TEMP (important)
+  };
+}
+
+if (user.role === "patient") {
+  user = {
+    ...user,
+    id: user._id || "PT" + Date.now(),
+    assignedDocId: "D001",
+    age: 25,
+    blood: "O+",
+    gender: "Male",
+    condition: "General"
+  };
+}
+
+// ✅ SET USER
+currentUser = user;
+currentRole = user.role;
 
 // ✅ REDIRECT BASED ON ROLE
 if (data.user.role === "doctor") {
