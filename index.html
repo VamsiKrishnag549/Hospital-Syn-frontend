@@ -766,8 +766,7 @@ async function handleLogin() {
     const res = await fetch("https://hospital-syn-backend.onrender.com/login", {
       method: "POST",
      headers: {
-  "Content-Type": "application/json",
-  "Authorization": "Bearer " + localStorage.getItem("token")
+  "Content-Type": "application/json"
 },
       body: JSON.stringify({ email, password })
     });
@@ -785,6 +784,10 @@ localStorage.setItem("token", data.token);
 localStorage.setItem("user", JSON.stringify(data.user));
 
 alert("Login success");
+
+    if (!data.user.id) {
+  data.user.id = data.user._id || "TEMP_ID";
+}
 
 // ✅ SAVE USER
 currentUser = data.user;
@@ -1475,7 +1478,8 @@ function showScreen(id) {
   window.scrollTo(0,0);
 }
 function logout() {
-  localStorage.removeItem("token");
+ localStorage.removeItem("token");
+localStorage.removeItem("user");
 
   currentUser=null;
   currentRole=null;
