@@ -751,6 +751,14 @@ if (!res.ok) {
 }
 
 alert("Signup successful");
+    
+
+// auto-fill login fields
+document.getElementById('lEmail').value = email;
+document.getElementById('lPass').value = password;
+
+// auto login
+await handleLogin();
 
   } catch (err) {
     console.error("ERROR:", err);
