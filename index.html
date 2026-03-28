@@ -773,77 +773,75 @@ async function handleLogin() {
   try {
     const res = await fetch("https://hospital-syn-backend.onrender.com/login", {
       method: "POST",
-     headers: {
-  "Content-Type": "application/json"
-},
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();
 
-// ❗ check error
-if (!res.ok) {
-  alert(data.message || "Login failed");
-  return;
-}
+    // ❗ Error handling
+    if (!res.ok) {
+      alert(data.message || "Login failed");
+      return;
+    }
 
-// ✅ SAVE TOKEN
-localStorage.setItem("token", data.token);
-localStorage.setItem("user", JSON.stringify(data.user));
+    // ✅ Save token & user
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
-alert("Login success");
+    alert("Login success");
 
-    if (!data.user.id) {
-  data.user.id = data.user._id || "TEMP_ID";
-}
+    // 🔥 MAP USER (VERY IMPORTANT)
+    let user = data.user;
 
-// ✅ SAVE USER
-// 🔥 Map backend user to frontend format
-let user = data.user;
+    // normalize role (fix major bug)
+    const role = (user.role || "").toLowerCase();
 
-if (user.role === "doctor") {
-  user = {
-    ...user,
-    id: user._id || "D" + Date.now(),
-    spec: "General Doctor",
-    color: "#0284c7"
-  };
-}
+    if (role === "doctor") {
+      user = {
+        ...user,
+        id: user._id || "D" + Date.now(),
+        spec: "General Doctor",
+        color: "#0284c7"
+      };
+    }
 
-if (user.role === "receptionist") {
-  user = {
-    ...user,
-    id: user._id || "R" + Date.now(),
-    assignedDocId: "D001" // TEMP (important)
-  };
-}
+    else if (role === "receptionist") {
+      user = {
+        ...user,
+        id: user._id || "R" + Date.now(),
+        assignedDocId: "D001"
+      };
+    }
 
-if (user.role === "patient") {
-  user = {
-    ...user,
-    id: user._id || "PT" + Date.now(),
-    assignedDocId: "D001",
-    age: 25,
-    blood: "O+",
-    gender: "Male",
-    condition: "General"
-  };
-}
+    else if (role === "patient") {
+      user = {
+        ...user,
+        id: user._id || "PT" + Date.now(),
+        assignedDocId: "D001",
+        age: 25,
+        blood: "O+",
+        gender: "Male",
+        condition: "General"
+      };
+    }
 
-// ✅ SET USER
-currentUser = user;
-currentRole = user.role;
+    // ✅ SET GLOBAL USER
+    currentUser = user;
+    currentRole = role;
 
-// ✅ REDIRECT BASED ON ROLE
-if (data.user.role === "doctor") {
-  loadDoctorDash(data.user);
-} else if (data.user.role === "receptionist") {
-  loadRecDash(data.user);
-} else {
-  loadPatientDash(data.user);
-}
+    // ✅ REDIRECT (USE mapped user, NOT data.user ❗)
+    if (role === "doctor") {
+      loadDoctorDash(user);
+    } else if (role === "receptionist") {
+      loadRecDash(user);
+    } else {
+      loadPatientDash(user);
+    }
 
-closeAuth();
+    closeAuth();
 
   } catch (err) {
     console.error(err);
