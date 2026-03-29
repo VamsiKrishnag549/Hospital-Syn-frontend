@@ -767,6 +767,7 @@ await handleLogin();
 }
 
 // ================= LOGIN FUNCTION =================
+// ================= LOGIN FUNCTION =================
 function handleLogin() {
   const email = document.getElementById("lEmail").value;
   const password = document.getElementById("lPass").value;
@@ -781,7 +782,7 @@ function handleLogin() {
     if (user) {
       currentUser = user;
       closeAuth();
-      loadDoctorDash(user); // ✅ CORRECT
+      loadDoctorDash(user);
       return;
     }
   }
@@ -792,7 +793,7 @@ function handleLogin() {
     if (user) {
       currentUser = user;
       closeAuth();
-      loadRecDash(user); // ✅ FIXED
+      showScreen("receptionist-dash");
       return;
     }
   }
@@ -803,13 +804,14 @@ function handleLogin() {
     if (user) {
       currentUser = user;
       closeAuth();
-      loadPatientDash(user); // ✅ FIXED
+      showScreen("patient-dash");
       return;
     }
   }
 
   alert("Invalid email or password");
 }
+
 // ═══════════════════════════════════════════════
 // DOCTOR DASHBOARD
 // ═══════════════════════════════════════════════
