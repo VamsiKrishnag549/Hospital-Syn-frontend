@@ -766,87 +766,49 @@ await handleLogin();
   }
 }
 
-async function handleLogin() {
-  const email = document.getElementById('lEmail').value;
-  const password = document.getElementById('lPass').value;
+// ================= LOGIN FUNCTION =================
+function handleLogin() {
+  const email = document.getElementById("lEmail").value;
+  const password = document.getElementById("lPass").value;
 
-  try {
-    const res = await fetch("https://hospital-syn-backend.onrender.com/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+  console.log("Login:", email, password, currentRole);
 
-    const data = await res.json();
+  let user = null;
 
-    // ❗ Error handling
-    if (!res.ok) {
-      alert(data.message || "Login failed");
+  // Doctor
+  if (currentRole === "doctor") {
+    user = DB.doctors.find(u => u.email === email && u.pass === password);
+    if (user) {
+      currentUser = user;
+      closeAuth();
+      loadDoctorDash(user); // ✅ CORRECT
       return;
     }
-
-    // ✅ Save token & user
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    alert("Login success");
-
-    // 🔥 MAP USER (VERY IMPORTANT)
-    let user = data.user;
-
-    // normalize role (fix major bug)
-    const role = (user.role || "").toLowerCase();
-
-    if (role === "doctor") {
-      user = {
-        ...user,
-        id: user._id || "D" + Date.now(),
-        spec: "General Doctor",
-        color: "#0284c7"
-      };
-    }
-
-    else if (role === "receptionist") {
-      user = {
-        ...user,
-        id: user._id || "R" + Date.now(),
-        assignedDocId: "D001"
-      };
-    }
-
-    else if (role === "patient") {
-      user = {
-        ...user,
-        id: user._id || "PT" + Date.now(),
-        assignedDocId: "D001",
-        age: 25,
-        blood: "O+",
-        gender: "Male",
-        condition: "General"
-      };
-    }
-
-    // ✅ SET GLOBAL USER
-    currentUser = user;
-    currentRole = role;
-
-    // ✅ REDIRECT (USE mapped user, NOT data.user ❗)
-    if (role === "doctor") {
-      loadDoctorDash(user);
-    } else if (role === "receptionist") {
-      loadRecDash(user);
-    } else {
-      loadPatientDash(user);
-    }
-
-    closeAuth();
-
-  } catch (err) {
-    console.error(err);
-    alert("Login failed");
   }
+
+  // Receptionist
+  if (currentRole === "receptionist") {
+    user = DB.receptionists.find(u => u.email === email && u.pass === password);
+    if (user) {
+      currentUser = user;
+      closeAuth();
+      loadRecDash(user); // ✅ FIXED
+      return;
+    }
+  }
+
+  // Patient
+  if (currentRole === "patient") {
+    user = DB.patients.find(u => u.email === email && u.pass === password);
+    if (user) {
+      currentUser = user;
+      closeAuth();
+      loadPatientDash(user); // ✅ FIXED
+      return;
+    }
+  }
+
+  alert("Invalid email or password");
 }
 // ═══════════════════════════════════════════════
 // DOCTOR DASHBOARD
